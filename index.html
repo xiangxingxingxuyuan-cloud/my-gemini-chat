@@ -1,27 +1,157 @@
-<!DOCTYPE html>   < !DOCTYPE html>
-<html lang="zh-CN">   < css长= " zh-CN" >
-<head>   < head   头>
-    <meta charset="UTF-8">   <meta   元 charset   字符集   字符集="UTF-8"   "UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta   元 name   名字   名字="viewport"   "viewport" content="width=device-width, initial-scale=1.0">
-    <title>测试按钮</title>
-    <style>   < style   风格>
-        #sendBtn {   # sendBtn——
-            padding   填充: 10px 20px;
-            background   背景: #007bff;   背景:# 007 bff;
-            color: white;   颜色:白色;
-            border: none;   边界:没有;
-            border-radius: 20px;
-            cursor: pointer;   光标:指针;
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的 Gemini AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-    </style>   < / style>
-</head>   < / head>
-<body>   < body   身体>
-    <button id="sendBtn">测试发送</button>
+        body {
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 75%;
+            line-height: 1.5;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .bot-message {
+            background: white;
+            color: #333;
+            margin-right: auto;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .input-area {
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            gap: 10px;
+        }
+        #userInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+        }
+        #sendBtn {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #sendBtn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container" id="chatContainer"></div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="输入你的问题..." autocomplete="off">
+        <button id="sendBtn">发送</button>
+    </div>
 
-    <script>   < script   脚本>
-        const btn = document.getElementById('sendBtn');
-        btn.addEventListener('click', function() {
-            alert('按钮点击成功！');
+    <script>
+        // 替换成你自己的 API Key
+        const API_KEY = "AIzaSyDwY7i6BFgsC9tL_enUCYO2oENOgZAYoLo0";
+        const MODEL_NAME = "gemini-1.5-flash";
+        const chatContainer = document.getElementById("chatContainer");
+        const userInput = document.getElementById("userInput");
+        const sendBtn = document.getElementById("sendBtn");
+
+        function addMessage(text, isUser) {
+            const div = document.createElement("div");
+            div.className = `message ${isUser ? "user-message" : "bot-message"}`;
+            div.textContent = text;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function askGemini(question) {
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAME}:generateContent?key=${API_KEY}`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: question }] }]
+                        })
+                    }
+                );
+
+                const data = await response.json();Const data   数据 = await   等待 response      响应响应.json()；
+
+                if (data.error) {
+                    return `❌ API 错误：${data.error.message}\n请检查 API Key 是否正确或配额是否用尽。`;
+                }
+
+                if (!data.candidates || data.candidates.length === 0) {
+                    return "⚠️ 抱歉，AI 未能返回有效回答，请重试。";
+                }
+
+                const candidate = data.candidates[0];
+                if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {如果候选人。内容b| | ！部件|| candidate   候选人.content   内容.parts   部分.length   长度 === 0) {
+                    return "⚠️ 抱歉，回答内容格式异常，请重试。";
+                }
+
+                return candidate.content.parts[0].text;返回candidate.content   内容.parts   部分[0]。text   。文本;
+            } catch (error) {
+                console.error("请求异常：", error);console   控制台.error   错误("请求异常：", error   错误);
+                return "❌ 网络错误：" + error.message + "\n请检查网络连接。";
+            }
+        }
+
+        sendBtn.addEventListener("click", async () => {sendBtn.addEventListener("click"   "click"   "click"   "click"   "click"   "click"   "click"   "click"   "click"   "click"   "click"   "click"   "click"   "click", async   异步 () => {
+            const text = userInput.value.trim();const   常量   文本 text      文本文本 = userInput.value   价值.trim   修剪()；
+            if (!text) return;   如果(!返回文本);
+
+            sendBtn.disabled = true;   sendBtn。Disabled = true；
+            sendBtn.textContent = "发送中...";sendBtn.textContent = "发送中...";
+
+            addMessage(text, true);   addMessage(文本、真实);
+            userInput.value = "";   userInput.value   价值 = ""   ""   ""   ""   ""   ""   ""   ""   ""   ""   ""   ""   "";
+            addMessage("🤖 思考中...", false);addMessage("🤖 思考中...", false   假);
+
+            const answer = await askGemini(text);const   常量   回答 answer      回答回答 = await   等待 askGemini(text   文本)；
+            chatContainer.removeChild(chatContainer.lastChild);
+            addMessage(answer, false);addMessage(答案,错误);
+
+            sendBtn.disabled = false;   sendBtn。Disabled = false；
+            sendBtn.textContent = "发送";sendBtn.textContent = "发送";
+        });
+
+        userInput.addEventListener("keypress", (e) => {userInput.addEventListener("keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress"   "keypress", (e) => {
+            if (e.key === "Enter") sendBtn.click();如果（e.k key   关键 === " quot; enter "   “,”;输入“;） sendBtn.click   点击()；
         });
     </script>   < / script>
 </body>   < / body>
