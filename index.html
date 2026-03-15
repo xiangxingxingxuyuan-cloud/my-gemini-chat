@@ -2,15 +2,16 @@
 <html lang="zh-CN">   < css长= " zh-CN" >
 <head>   < head   头>
     <meta charset="UTF-8">   <meta   元 charset   字符集   字符集="UTF-8"   "UTF-8">
-    <title>测试按钮</title>   <title   标题>测试按钮</   & lt;title>
+    <title>测试页面</title>
 </head>   < / head>
 <body>   < body   身体>
-    <button id="testBtn" style="padding: 20px; font-size: 20px;">我是测试按钮</button>
+    <h1>网站正常啦！</h1>
+    <button id="testBtn" style="padding: 15px 30px; font-size: 18px;">点我测试</button>
     <script>   < script   脚本>
         const btn = document.getElementById('testBtn');
-        btn.onclick = function() {
-            alert('成功点击！');
-        };
+        btn.addEventListener('click', function() {btn。addEventListener('click'   “点击”, function   函数() {
+            alert('按钮能点了！🎉');
+        });
     </script>   < / script>
 </body>   < / body>
 </html>   < / html>
